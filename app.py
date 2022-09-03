@@ -1,5 +1,6 @@
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium import webdriver
 import pychrome
@@ -11,6 +12,8 @@ import os
 dotenv.load_dotenv()
 EMAIL = os.getenv("EMAIL")
 PASSWORD = os.getenv("PASSWORD")
+PLAYLIST_URL = os.getenv("PLAYLIST_URL")
+PATH_TO_DRIVER = os.getenv("PATH_TO_DRIVER")
 
 
 def waitUntilLocated(by=By.CLASS_NAME, search="spotify-logo--text"):
@@ -65,7 +68,10 @@ def response_received(**kwargs):
             return
 
         print("Outputting Key: " + key)
-        file_data[key] = data
+        file_data[key] = {
+            "songName": songs[len(file_data)],
+            "lyrics": data
+        }
 
         file.seek(0)
         json.dump(file_data, file, indent=4)
@@ -73,7 +79,7 @@ def response_received(**kwargs):
 
 options = webdriver.ChromeOptions()
 options.add_argument("--remote-debugging-port=8000")
-driver = webdriver.Chrome(options=options)
+driver = webdriver.Chrome(service=Service(PATH_TO_DRIVER), options=options)
 
 browser = pychrome.Browser(url="http://localhost:8000")
 tab = browser.list_tab()[0]
@@ -84,21 +90,35 @@ tab.Network.responseReceived = response_received
 
 login()
 
-driver.get("https://open.spotify.com/playlist/6Enre249js2Pkz1KK5rRrQ")
+driver.get(PLAYLIST_URL)
 waitUntilLocated()
 
 time.sleep(10)
 
+songs = [info.text for info in driver.find_elements(
+    By.XPATH, "//div[@class=\"iCQtmPqY0QvkumAOuCjr\"]//a//div")]
+
 for i in range(10):
-    next = driver.find_element(By.CLASS_NAME, "mnipjT4SLDMgwiDCEnRC")
-    next.click()
-    time.sleep(3)
     try:
         get_lyrics = driver.find_element(By.CLASS_NAME, "ZMXGDTbwxKJhbmEDZlYy")
         get_lyrics.click()
+        time.sleep(2)
+        get_lyrics.click()
     except:
-        pass
+        with open("output.json", "r+") as file:
+            file_data = json.load(file)
+            file_data[f"Key{i}"] = {
+                "songName": songs[i],
+                "lyrics": "No Lyrics Available"
+            }
+
+            file.seek(0)
+            json.dump(file_data, file, indent=4)
     time.sleep(2)
+
+    next = driver.find_element(By.CLASS_NAME, "mnipjT4SLDMgwiDCEnRC")
+    next.click()
+    time.sleep(3)
 
 tab.stop()
 

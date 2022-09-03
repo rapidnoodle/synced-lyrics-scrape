@@ -188,4 +188,8 @@ cython_debug/
 # Ignore code-workspaces
 *.code-workspace
 
+# Ignore chromedrivers
+chromedriver.exe
+chromedriver
+
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,python
