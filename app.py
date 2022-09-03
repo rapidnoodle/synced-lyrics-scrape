@@ -68,8 +68,9 @@ def response_received(**kwargs):
             return
 
         print("Outputting Key: " + key)
+        song_index = len(file_data["noLyrics"]) + len(file_data) - 1
         file_data[key] = {
-            "songName": songs[len(file_data["noLyrics"]) + len(file_data) - 1],
+            "songName": songs[song_index] if song_index < len(songs) else "Unknown Song",
             "lyrics": data
         }
 
