@@ -69,7 +69,7 @@ def response_received(**kwargs):
 
         print("Outputting Key: " + key)
         file_data[key] = {
-            "songName": songs[len(file_data)],
+            "songName": songs[len(file_data["noLyrics"]) + len(file_data) - 1],
             "lyrics": data
         }
 
@@ -98,7 +98,7 @@ time.sleep(10)
 songs = [info.text for info in driver.find_elements(
     By.XPATH, "//div[@class=\"iCQtmPqY0QvkumAOuCjr\"]//a//div")]
 
-for i in range(10):
+for song_name in songs:
     try:
         get_lyrics = driver.find_element(By.CLASS_NAME, "ZMXGDTbwxKJhbmEDZlYy")
         get_lyrics.click()
@@ -107,10 +107,7 @@ for i in range(10):
     except:
         with open("output.json", "r+") as file:
             file_data = json.load(file)
-            file_data[f"Key{i}"] = {
-                "songName": songs[i],
-                "lyrics": "No Lyrics Available"
-            }
+            file_data["noLyrics"].append(song_name)
 
             file.seek(0)
             json.dump(file_data, file, indent=4)
