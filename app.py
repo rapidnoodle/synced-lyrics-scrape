@@ -53,6 +53,7 @@ def response_received(**kwargs):
             )["body"].replace("\"", "\"")
         )["lyrics"]["lines"]
 
+        data.pop()
         for line in data:
             del line["syllables"]
             del line["endTimeMs"]
